@@ -144,23 +144,20 @@ static int write_tree_level(IndexEntry *entries, int count,
         char *slash = strchr(rel, '/');
 
         if (!slash) {
-            // It's a file in the current directory
+            //a file in the current directory
             TreeEntry *te = &tree.entries[tree.count++];
             te->mode = entries[i].mode;
-            // Use snprintf to avoid truncation warnings
             snprintf(te->name, sizeof(te->name), "%s", rel);
             te->hash = entries[i].hash;
             i++;
         } else {
-            // It's a subdirectory
+            // a subdirectory
             size_t dir_len = slash - rel;
             char dir_name[256];
             snprintf(dir_name, sizeof(dir_name), "%.*s", (int)dir_len, rel);
 
             char sub_prefix[512];
             snprintf(sub_prefix, sizeof(sub_prefix), "%s%s/", prefix, dir_name);
-
-            // Group all files belonging to this subdirectory
             int j = i;
             while (j < count && strncmp(entries[j].path, sub_prefix, strlen(sub_prefix)) == 0)
                 j++;
@@ -188,7 +185,7 @@ static int write_tree_level(IndexEntry *entries, int count,
 
 int tree_from_index(ObjectID *id_out) {
     Index index;
-    if (index_load(&index) != 0) return -1; // Requires index.o for linking
+    if (index_load(&index) != 0) return -1;
     if (index.count == 0) return -1;
     return write_tree_level(index.entries, index.count, "", id_out);
 }
