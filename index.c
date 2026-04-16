@@ -105,12 +105,11 @@ int index_status(const Index *index) {
 int index_load(Index *index) {
     index->count = 0;
     FILE *f = fopen(INDEX_FILE, "r");
-    if (!f) return 0; // Not an error if it doesn't exist yet
+    if (!f) return 0; 
 
     char hex[HASH_HEX_SIZE + 1];
     while (index->count < MAX_INDEX_ENTRIES) {
         IndexEntry *e = &index->entries[index->count];
-        // Use %[^\n] to correctly read paths that might contain spaces
         if (fscanf(f, "%o %64s %llu %u %511[^\n]\n", 
                    &e->mode, hex, (unsigned long long *)&e->mtime_sec, 
                    &e->size, e->path) != 5) break;
@@ -136,11 +135,10 @@ int index_save(const Index *index) {
     FILE *f = fopen(tmp_path, "w");
     if (!f) return -1;
 
-    Index sorted = *index;
-    qsort(sorted.entries, sorted.count, sizeof(IndexEntry), compare_entries);
+    qsort((void *)index->entries, index->count, sizeof(IndexEntry), compare_entries);
 
-    for (int i = 0; i < sorted.count; i++) {
-        IndexEntry *e = &sorted.entries[i];
+    for (int i = 0; i < index->count; i++) {
+        const IndexEntry *e = &index->entries[i];
         char hex[HASH_HEX_SIZE + 1];
         hash_to_hex(&e->hash, hex);
         fprintf(f, "%o %s %llu %u %s\n",
